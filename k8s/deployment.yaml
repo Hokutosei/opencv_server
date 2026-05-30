@@ -15,10 +15,12 @@ spec:
         app: opencv-server
     spec:
       hostNetwork: true
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: opencv-server
-          image: opencv-server:latest
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/hokutosei/opencv_server:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
               protocol: TCP
@@ -42,3 +44,5 @@ spec:
       volumes:
         - name: data
           emptyDir: {}
+      nodeSelector:
+        kubernetes.io/arch: amd64
