@@ -106,6 +106,12 @@ document.getElementById('btn-copy-url').addEventListener('click', () => {
     navigator.clipboard.writeText(urlInput.value);
 });
 
+document.getElementById('btn-copy-mjpeg-url').addEventListener('click', () => {
+    const urlInput = document.getElementById('stream-mjpeg-url');
+    urlInput.select();
+    navigator.clipboard.writeText(urlInput.value);
+});
+
 window.viewCamera = (cameraId, cameraName) => {
     currentStreamCameraId = cameraId;
     document.getElementById('viewer-title').textContent = cameraName;

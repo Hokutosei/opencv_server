@@ -1,7 +1,9 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Request
+from fastapi.responses import StreamingResponse
 import asyncio
 import json
 import logging
+import time
 
 from app.streaming.stream_manager import StreamManager
 
@@ -16,21 +18,25 @@ async def stream_endpoint(websocket: WebSocket, camera_id: str):
     worker = manager.get_worker(camera_id)
 
     if not worker:
+        logger.warning(f"WebSocket connect to {camera_id}: worker not found")
         await websocket.accept()
         await websocket.send_text(json.dumps({"error": "camera_not_found"}))
         await websocket.close()
         return
 
     await websocket.accept()
+    logger.info(f"WebSocket client connected to {camera_id}")
 
     queue: asyncio.Queue = asyncio.Queue(maxsize=2)
     worker.add_subscriber(queue)
+    frames_sent = 0
 
     try:
         frame_bytes, metadata, frame_id = worker.get_latest_frame()
         if frame_bytes:
             await websocket.send_bytes(frame_bytes)
             await websocket.send_text(json.dumps(metadata))
+            frames_sent += 1
 
         while True:
             try:
@@ -45,13 +51,43 @@ async def stream_endpoint(websocket: WebSocket, camera_id: str):
             if frame_bytes:
                 await websocket.send_bytes(frame_bytes)
                 await websocket.send_text(json.dumps(metadata))
+                frames_sent += 1
 
     except WebSocketDisconnect:
-        logger.debug(f"WebSocket client disconnected from {camera_id}")
+        logger.info(f"WebSocket client disconnected from {camera_id} (sent {frames_sent} frames)")
     except Exception as e:
-        logger.error(f"WebSocket error for {camera_id}: {e}")
+        logger.error(f"WebSocket error for {camera_id} after {frames_sent} frames: {e}")
     finally:
         worker.remove_subscriber(queue)
+
+
+@router.get("/stream/mjpeg/{camera_id}")
+async def mjpeg_stream(request: Request, camera_id: str):
+    """MJPEG HTTP stream endpoint - works in any browser via <img> tag."""
+    manager: StreamManager = request.app.state.stream_manager
+    worker = manager.get_worker(camera_id)
+
+    if not worker:
+        return {"error": "camera_not_found"}
+
+    async def frame_generator():
+        last_frame_id = -1
+        while True:
+            frame_bytes, metadata, frame_id = worker.get_latest_frame()
+            if frame_bytes and frame_id != last_frame_id:
+                last_frame_id = frame_id
+                yield (
+                    b"--frame\r\n"
+                    b"Content-Type: image/jpeg\r\n\r\n"
+                    + frame_bytes
+                    + b"\r\n"
+                )
+            await asyncio.sleep(0.04)  # ~25fps max
+
+    return StreamingResponse(
+        frame_generator(),
+        media_type="multipart/x-mixed-replace; boundary=frame",
+    )
 
 
 @router.websocket("/ws/status")

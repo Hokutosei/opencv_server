@@ -175,6 +175,23 @@ main {
 .camera-card-actions {
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
+}
+
+.camera-card-urls {
+    margin-bottom: 12px;
+    font-size: 0.7rem;
+}
+
+.url-label {
+    color: var(--text-dim);
+    margin-bottom: 2px;
+    word-break: break-all;
+}
+
+.url-label code {
+    color: var(--text);
+    font-size: 0.7rem;
 }
 
 .btn-primary, .btn-secondary, .btn-danger {
@@ -289,6 +306,12 @@ main {
 }
 
 #stream-canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+#stream-img {
     display: block;
     max-width: 100%;
     height: auto;

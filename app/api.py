@@ -18,6 +18,9 @@ def create_app() -> FastAPI:
 
     @app.get("/")
     async def serve_index():
-        return FileResponse(os.path.join(static_dir, "index.html"))
+        return FileResponse(
+            os.path.join(static_dir, "index.html"),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+        )
 
     return app

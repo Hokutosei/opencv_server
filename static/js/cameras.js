@@ -54,6 +54,7 @@ function renderCameras(cameras) {
         const faces = cam.stats ? cam.stats.total_faces : 0;
         const objects = cam.stats ? cam.stats.total_objects : 0;
         const wsUrl = cam.stream_ws_url || '';
+        const mjpegUrl = `${location.protocol}//${location.host}/stream/mjpeg/${cam.id}`;
         const toggleLabel = cam.is_active ? 'Stop' : 'Start';
 
         return `
@@ -71,8 +72,13 @@ function renderCameras(cameras) {
                     <span>Faces: <strong>${faces}</strong></span>
                     <span>Objects: <strong>${objects}</strong></span>
                 </div>
+                <div class="camera-card-urls">
+                    <div class="url-label">WS: <code>${escHtml(wsUrl)}</code></div>
+                    <div class="url-label">MJPEG: <code>${escHtml(mjpegUrl)}</code></div>
+                </div>
                 <div class="camera-card-actions">
                     <button class="btn-primary" onclick="viewCamera('${cam.id}', '${escAttr(cam.name)}')">View</button>
+                    <a class="btn-secondary" href="${escAttr(mjpegUrl)}" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center;padding:6px 14px;">Open MJPEG</a>
                     <button class="btn-secondary" onclick="toggleCamera('${cam.id}', ${cam.is_active})">${toggleLabel}</button>
                     <button class="btn-danger" onclick="deleteCameraAction('${cam.id}')">Delete</button>
                 </div>

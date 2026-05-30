@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenCV Camera Server</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=2">
 </head>
 <body>
     <header>
@@ -54,7 +54,8 @@
                 <button id="btn-close-viewer" class="btn-secondary">Close</button>
             </div>
             <div class="viewer-container">
-                <canvas id="stream-canvas" width="640" height="480"></canvas>
+                <canvas id="stream-canvas" width="640" height="480" style="display:none"></canvas>
+                <img id="stream-img" alt="Camera stream" style="display:none; max-width:100%; height:auto;">
                 <div id="stream-overlay" class="stream-overlay hidden">
                     <span>Disconnected</span>
                     <button id="btn-reconnect" class="btn-secondary">Reconnect</button>
@@ -71,10 +72,15 @@
                     <input type="text" id="stream-ws-url" readonly>
                     <button id="btn-copy-url" class="btn-secondary">Copy</button>
                 </div>
+                <label style="margin-top:8px">MJPEG Stream URL (for browser / img tag):</label>
+                <div class="url-row">
+                    <input type="text" id="stream-mjpeg-url" readonly>
+                    <button id="btn-copy-mjpeg-url" class="btn-secondary">Copy</button>
+                </div>
             </div>
         </section>
     </main>
 
-    <script type="module" src="/static/js/app.js"></script>
+    <script type="module" src="/static/js/app.js?v=2"></script>
 </body>
 </html>
