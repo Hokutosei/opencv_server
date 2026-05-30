@@ -9,4 +9,5 @@ venv/
 .idea/
 cameras.db
 models/*.caffemodel
+models/*.prototxt
 /tmp/

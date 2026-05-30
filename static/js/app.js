@@ -44,6 +44,52 @@ document.getElementById('add-camera-form').addEventListener('submit', async (e) 
     }
 });
 
+document.getElementById('btn-test-camera').addEventListener('click', async () => {
+    const url = document.getElementById('cam-url').value.trim();
+    const msgEl = document.getElementById('form-msg');
+    const previewArea = document.getElementById('preview-area');
+    const previewImg = document.getElementById('preview-img');
+    const previewStats = document.getElementById('preview-stats');
+
+    if (!url) {
+        msgEl.textContent = 'Please enter a stream URL first';
+        msgEl.className = 'form-msg error';
+        return;
+    }
+
+    msgEl.textContent = 'Testing camera...';
+    msgEl.className = 'form-msg';
+
+    try {
+        const res = await fetch('/api/cameras/test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'test', stream_url: url }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            previewImg.src = data.frame;
+            previewStats.innerHTML = `
+                Resolution: ${data.resolution.width}x${data.resolution.height} |
+                Faces: ${data.faces_detected} |
+                Objects: ${data.objects_detected}
+            `;
+            previewArea.classList.remove('hidden');
+            msgEl.textContent = 'Camera test successful!';
+            msgEl.className = 'form-msg success';
+        } else {
+            previewArea.classList.add('hidden');
+            msgEl.textContent = data.error || 'Camera test failed';
+            msgEl.className = 'form-msg error';
+        }
+    } catch (err) {
+        previewArea.classList.add('hidden');
+        msgEl.textContent = 'Failed to test camera: ' + err.message;
+        msgEl.className = 'form-msg error';
+    }
+});
+
 document.getElementById('btn-close-viewer').addEventListener('click', () => {
     switchTab('cameras');
 });

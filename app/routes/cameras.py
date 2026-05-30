@@ -164,3 +164,67 @@ async def health(request: Request):
         "active_cameras": len(status),
         "online_cameras": sum(1 for s in status.values() if s["is_online"]),
     }
+
+
+@router.post("/cameras/test")
+async def test_camera(data: CameraCreate, request: Request):
+    """Test a camera stream URL before registering. Returns a preview frame + detection info."""
+    import cv2
+    import asyncio
+    import base64
+    import numpy as np
+    from config import MAX_FRAME_WIDTH, JPEG_QUALITY
+    from app.detection.face_detector import FaceDetector
+    from app.detection.object_detector import ObjectDetector
+
+    def _test_stream(url: str) -> dict:
+        cap = cv2.VideoCapture(url)
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        if not cap.isOpened():
+            return {"success": False, "error": "Failed to open stream"}
+
+        ret, frame = cap.read()
+        cap.release()
+        if not ret:
+            return {"success": False, "error": "Failed to read frame"}
+
+        h, w = frame.shape[:2]
+        if w > MAX_FRAME_WIDTH:
+            scale = MAX_FRAME_WIDTH / w
+            frame = cv2.resize(frame, (MAX_FRAME_WIDTH, int(h * scale)), interpolation=cv2.INTER_AREA)
+
+        face_det = FaceDetector()
+        obj_det = ObjectDetector()
+
+        faces = face_det.detect(frame)
+        objects = obj_det.detect(frame)
+
+        for (x, y, fw, fh) in faces:
+            cv2.rectangle(frame, (x, y), (x + fw, y + fh), (0, 255, 0), 2)
+            cv2.putText(frame, "Face", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        for obj in objects:
+            bx, by, bw, bh = obj["bbox"]
+            color = (255, 0, 0) if obj["label"] == "person" else (0, 0, 255)
+            cv2.rectangle(frame, (bx, by), (bx + bw, by + bh), color, 2)
+            cv2.putText(frame, f"{obj['label']} {obj['confidence']:.2f}", (bx, by - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+        _, jpeg = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY])
+        frame_b64 = base64.b64encode(jpeg.tobytes()).decode("utf-8")
+
+        return {
+            "success": True,
+            "resolution": {"width": w, "height": h},
+            "frame": f"data:image/jpeg;base64,{frame_b64}",
+            "faces_detected": len(faces),
+            "objects_detected": len(objects),
+            "detections": (
+                [{"type": "face", "label": "face", "bbox": list(b)} for b in faces] +
+                [{"type": "object", "label": o["label"], "confidence": round(o["confidence"], 3), "bbox": list(o["bbox"])} for o in objects]
+            ),
+        }
+
+    try:
+        result = await asyncio.get_event_loop().run_in_executor(None, _test_stream, data.stream_url)
+        return result
+    except Exception as e:
+        return {"success": False, "error": str(e)}

@@ -35,8 +35,16 @@
                     <label for="cam-url">Stream URL (MJPEG over HTTP)</label>
                     <input type="text" id="cam-url" placeholder="e.g., http://192.168.1.50:81/stream" required>
                 </div>
-                <button type="submit" class="btn-primary">Register Camera</button>
+                <div class="form-actions">
+                    <button type="button" id="btn-test-camera" class="btn-secondary">Test & Preview</button>
+                    <button type="submit" class="btn-primary">Register Camera</button>
+                </div>
                 <div id="form-msg" class="form-msg"></div>
+                <div id="preview-area" class="preview-area hidden">
+                    <h3>Preview</h3>
+                    <img id="preview-img" alt="Camera preview">
+                    <div id="preview-stats" class="preview-stats"></div>
+                </div>
             </form>
         </section>
 
