@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.db
+.env
+.venv/
+venv/
+.vscode/
+.idea/
+cameras.db
+models/*.caffemodel
+/tmp/

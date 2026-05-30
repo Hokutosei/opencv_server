@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenCV Camera Server</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>OpenCV Camera Server</h1>
+        <div id="health-indicator" class="health-badge">Checking...</div>
+    </header>
+
+    <nav>
+        <button class="tab-btn active" data-tab="cameras">Cameras</button>
+        <button class="tab-btn" data-tab="add-camera">Add Camera</button>
+    </nav>
+
+    <main>
+        <section id="cameras-tab" class="tab-content active">
+            <div id="camera-list" class="camera-grid">
+                <p class="empty-msg">No cameras registered. Add one to get started.</p>
+            </div>
+        </section>
+
+        <section id="add-camera-tab" class="tab-content">
+            <form id="add-camera-form" class="form-card">
+                <h2>Register New Camera</h2>
+                <div class="form-group">
+                    <label for="cam-name">Camera Name</label>
+                    <input type="text" id="cam-name" placeholder="e.g., Front Door Camera" required>
+                </div>
+                <div class="form-group">
+                    <label for="cam-url">Stream URL (MJPEG over HTTP)</label>
+                    <input type="text" id="cam-url" placeholder="e.g., http://192.168.1.50:81/stream" required>
+                </div>
+                <button type="submit" class="btn-primary">Register Camera</button>
+                <div id="form-msg" class="form-msg"></div>
+            </form>
+        </section>
+
+        <section id="stream-viewer" class="tab-content">
+            <div class="viewer-header">
+                <h2 id="viewer-title">Camera Stream</h2>
+                <button id="btn-close-viewer" class="btn-secondary">Close</button>
+            </div>
+            <div class="viewer-container">
+                <canvas id="stream-canvas" width="640" height="480"></canvas>
+                <div id="stream-overlay" class="stream-overlay hidden">
+                    <span>Disconnected</span>
+                    <button id="btn-reconnect" class="btn-secondary">Reconnect</button>
+                </div>
+            </div>
+            <div id="stream-stats" class="stream-stats">
+                <span>FPS: <strong id="stat-fps">--</strong></span>
+                <span>Faces: <strong id="stat-faces">--</strong></span>
+                <span>Objects: <strong id="stat-objects">--</strong></span>
+            </div>
+            <div class="stream-url-box">
+                <label>WebSocket Stream URL (for external clients):</label>
+                <div class="url-row">
+                    <input type="text" id="stream-ws-url" readonly>
+                    <button id="btn-copy-url" class="btn-secondary">Copy</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

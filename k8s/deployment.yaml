@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opencv-server
+  labels:
+    app: opencv-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opencv-server
+  template:
+    metadata:
+      labels:
+        app: opencv-server
+    spec:
+      hostNetwork: true
+      containers:
+        - name: opencv-server
+          image: opencv-server:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "8000"
+            - name: DB_PATH
+              value: "/data/cameras.db"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir: {}
