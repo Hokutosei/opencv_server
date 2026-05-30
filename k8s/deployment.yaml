@@ -43,6 +43,7 @@ spec:
               mountPath: /data
       volumes:
         - name: data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: opencv-server-data
       nodeSelector:
         kubernetes.io/arch: amd64
