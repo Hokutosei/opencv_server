@@ -1,5 +1,5 @@
-import { loadCameras, registerCamera, deleteCamera, startCamera, stopCamera } from './cameras.js';
-import { connectStream, disconnectStream } from './stream.js';
+import { loadCameras, registerCamera, deleteCamera, startCamera, stopCamera } from './cameras.js?v=2';
+import { connectStream, disconnectStream } from './stream.js?v=2';
 
 const tabs = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
