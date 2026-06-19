@@ -1,6 +1,14 @@
 const cameraList = document.getElementById('camera-list');
 
+let _editingId = null;
+
+export function setEditingId(id) { _editingId = id; }
+export function getEditingId() { return _editingId; }
+
 export async function loadCameras() {
+    // Skip re-render while user is editing a camera card
+    if (_editingId) return;
+
     try {
         const res = await fetch('/api/cameras');
         const cameras = await res.json();

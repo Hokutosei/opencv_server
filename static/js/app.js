@@ -1,5 +1,5 @@
-import { loadCameras, registerCamera, deleteCamera, startCamera, stopCamera, updateCamera } from './cameras.js?v=3';
-import { connectStream, disconnectStream } from './stream.js?v=3';
+import { loadCameras, registerCamera, deleteCamera, startCamera, stopCamera, updateCamera, setEditingId } from './cameras.js?v=4';
+import { connectStream, disconnectStream } from './stream.js?v=4';
 
 const tabs = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -135,6 +135,7 @@ window.toggleCamera = async (cameraId, isActive) => {
 };
 
 window.editCamera = (cameraId, currentName, currentUrl) => {
+    setEditingId(cameraId);
     const card = document.querySelector(`[data-camera-id="${cameraId}"]`);
     if (!card) return;
     card.innerHTML = `
@@ -170,6 +171,7 @@ window.saveEdit = async (cameraId) => {
 
     try {
         await updateCamera(cameraId, name, url);
+        setEditingId(null);
         loadCameras();
     } catch (err) {
         msgEl.textContent = err.message || 'Failed to update';
@@ -178,6 +180,7 @@ window.saveEdit = async (cameraId) => {
 };
 
 window.cancelEdit = () => {
+    setEditingId(null);
     loadCameras();
 };
 
