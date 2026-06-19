@@ -1,5 +1,5 @@
-import { loadCameras, registerCamera, deleteCamera, startCamera, stopCamera } from './cameras.js?v=2';
-import { connectStream, disconnectStream } from './stream.js?v=2';
+import { loadCameras, registerCamera, deleteCamera, startCamera, stopCamera, updateCamera } from './cameras.js?v=3';
+import { connectStream, disconnectStream } from './stream.js?v=3';
 
 const tabs = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -133,6 +133,57 @@ window.toggleCamera = async (cameraId, isActive) => {
     }
     loadCameras();
 };
+
+window.editCamera = (cameraId, currentName, currentUrl) => {
+    const card = document.querySelector(`[data-camera-id="${cameraId}"]`);
+    if (!card) return;
+    card.innerHTML = `
+        <div class="edit-form">
+            <h3>Edit Camera</h3>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="edit-name-${cameraId}" value="${escAttr(currentName)}">
+            </div>
+            <div class="form-group">
+                <label>Stream URL</label>
+                <input type="text" id="edit-url-${cameraId}" value="${escAttr(currentUrl)}">
+            </div>
+            <div id="edit-msg-${cameraId}" class="form-msg"></div>
+            <div class="camera-card-actions" style="margin-top:12px">
+                <button class="btn-primary" onclick="saveEdit('${cameraId}')">Save</button>
+                <button class="btn-secondary" onclick="cancelEdit()">Cancel</button>
+            </div>
+        </div>
+    `;
+};
+
+window.saveEdit = async (cameraId) => {
+    const name = document.getElementById(`edit-name-${cameraId}`).value.trim();
+    const url = document.getElementById(`edit-url-${cameraId}`).value.trim();
+    const msgEl = document.getElementById(`edit-msg-${cameraId}`);
+
+    if (!name || !url) {
+        msgEl.textContent = 'Name and URL are required';
+        msgEl.className = 'form-msg error';
+        return;
+    }
+
+    try {
+        await updateCamera(cameraId, name, url);
+        loadCameras();
+    } catch (err) {
+        msgEl.textContent = err.message || 'Failed to update';
+        msgEl.className = 'form-msg error';
+    }
+};
+
+window.cancelEdit = () => {
+    loadCameras();
+};
+
+function escAttr(str) {
+    return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
 
 async function checkHealth() {
     const badge = document.getElementById('health-indicator');

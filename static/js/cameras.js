@@ -29,6 +29,22 @@ export async function deleteCamera(cameraId) {
     return res.json();
 }
 
+export async function updateCamera(cameraId, name, streamUrl) {
+    const body = {};
+    if (name !== undefined) body.name = name;
+    if (streamUrl !== undefined) body.stream_url = streamUrl;
+    const res = await fetch(`/api/cameras/${cameraId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to update');
+    }
+    return res.json();
+}
+
 export async function startCamera(cameraId) {
     const res = await fetch(`/api/cameras/${cameraId}/start`, { method: 'POST' });
     if (!res.ok) throw new Error('Failed to start');
@@ -58,7 +74,7 @@ function renderCameras(cameras) {
         const toggleLabel = cam.is_active ? 'Stop' : 'Start';
 
         return `
-            <div class="camera-card">
+            <div class="camera-card" data-camera-id="${cam.id}">
                 <div class="camera-card-header">
                     <h3>
                         <span class="status-dot ${statusClass}"></span>
@@ -79,6 +95,7 @@ function renderCameras(cameras) {
                 <div class="camera-card-actions">
                     <button class="btn-primary" onclick="viewCamera('${cam.id}', '${escAttr(cam.name)}')">View</button>
                     <a class="btn-secondary" href="${escAttr(mjpegUrl)}" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center;padding:6px 14px;">Open MJPEG</a>
+                    <button class="btn-secondary" onclick="editCamera('${cam.id}', '${escAttr(cam.name)}', '${escAttr(cam.stream_url)}')">Edit</button>
                     <button class="btn-secondary" onclick="toggleCamera('${cam.id}', ${cam.is_active})">${toggleLabel}</button>
                     <button class="btn-danger" onclick="deleteCameraAction('${cam.id}')">Delete</button>
                 </div>
